@@ -93,31 +93,6 @@ public class RoomController {
     }
     
     /**
-     * Update an existing room
-     * HTTP PUT: /api/rooms/{id}
-     * 
-     * @param id The ID of the room to update
-     * @param roomDetails The updated room details (request body)
-     * @return ResponseEntity containing the updated room and HTTP status 200 (OK),
-     *         or HTTP status 404 (NOT_FOUND) if room not found,
-     *         or HTTP status 400 (BAD_REQUEST) if validation fails
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<Room> updateRoom(@PathVariable String id, @RequestBody Room roomDetails) {
-        log.info("REST request to update room with ID: {}", id);
-        try {
-            Room updatedRoom = roomService.updateRoom(id, roomDetails);
-            return ResponseEntity.ok(updatedRoom);
-        } catch (IllegalArgumentException e) {
-            log.error("Failed to update room: {}", e.getMessage());
-            if (e.getMessage().contains("not found")) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    /**
      * Delete a room
      * HTTP DELETE: /api/rooms/{id}
      * 

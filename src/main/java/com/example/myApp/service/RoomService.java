@@ -27,6 +27,7 @@ public class RoomService {
     
     private final RoomRepository roomRepository;
     private final BedRepository bedRepository;
+    private final KafkaProducerService kafkaProducerService;
     
     /**
      * Create a new room in the system
@@ -60,6 +61,9 @@ public class RoomService {
         
         // Automatically create beds for the room based on capacity
         createBedsForRoom(savedRoom);
+        
+        // Publish room creation event to Kafka
+        kafkaProducerService.publishRoomEvent("CREATED", savedRoom);
         
         return savedRoom;
     }

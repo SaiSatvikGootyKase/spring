@@ -15,6 +15,8 @@ export const UserManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   
   // State for new user form
   const [newUser, setNewUser] = useState({
@@ -90,6 +92,46 @@ export const UserManagement: React.FC = () => {
   };
   
   /**
+   * Handle user update
+   * Validates input and updates user via API
+   */
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingUser || !editingUser.name.trim() || !editingUser.email.trim()) {
+      setError('Name and email are required');
+      return;
+    }
+    
+    try {
+      setError(null);
+      
+      const response = await fetch(`http://localhost:8080/api/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingUser),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update user');
+      }
+      
+      const updatedUser = await response.json();
+      setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+      
+      // Reset form
+      setEditingUser(null);
+      setShowEditForm(false);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update user');
+    }
+  };
+  
+  /**
    * Handle user deletion
    * Validates that user is not allocated before deletion
    */
@@ -124,6 +166,15 @@ export const UserManagement: React.FC = () => {
     // This would navigate to allocation page with user pre-selected
     // For now, we'll show an alert
     alert('Navigate to Allocations page to allocate this user to a bed');
+  };
+  
+  /**
+   * Handle edit user
+   * Opens edit form with user data
+   */
+  const handleEditUser = (user: any) => {
+    setEditingUser({ ...user });
+    setShowEditForm(true);
   };
   
   /**
@@ -295,6 +346,99 @@ export const UserManagement: React.FC = () => {
         </div>
       )}
       
+      {/* Edit User Form Modal */}
+      {showEditForm && editingUser && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-10">
+          <div className="relative min-h-screen flex items-center justify-center">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full m-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-medium text-gray-900">Edit User</h2>
+                <button
+                  onClick={() => {
+                    setShowEditForm(false);
+                    setEditingUser(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <form onSubmit={handleUpdateUser} className="space-y-4">
+                {/* Name Input */}
+                <div>
+                  <label htmlFor="editName" className="block text-sm font-medium text-gray-700">
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="editName"
+                    value={editingUser.name}
+                    onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter user name"
+                  />
+                </div>
+                
+                {/* Email Input */}
+                <div>
+                  <label htmlFor="editEmail" className="block text-sm font-medium text-gray-700">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="editEmail"
+                    value={editingUser.email}
+                    onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                    required
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter email address"
+                  />
+                </div>
+                
+                {/* Phone Number Input */}
+                <div>
+                  <label htmlFor="editPhoneNumber" className="block text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="editPhoneNumber"
+                    value={editingUser.phoneNumber || ''}
+                    onChange={(e) => setEditingUser({...editingUser, phoneNumber: e.target.value})}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter phone number (optional)"
+                  />
+                </div>
+                
+                {/* Form Actions */}
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditForm(false);
+                      setEditingUser(null);
+                    }}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                  >
+                    Update User
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Users Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
@@ -372,6 +516,7 @@ export const UserManagement: React.FC = () => {
                         
                         {/* Edit Button */}
                         <button
+                          onClick={() => handleEditUser(user)}
                           className="btn-secondary text-xs py-1 px-2"
                         >
                           Edit

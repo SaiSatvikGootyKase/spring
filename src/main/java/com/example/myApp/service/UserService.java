@@ -24,6 +24,7 @@ import java.util.Optional;
 public class UserService {
     
     private final UserRepository userRepository;
+    private final KafkaProducerService kafkaProducerService;
     
     /**
      * Create a new user in the system
@@ -49,6 +50,9 @@ public class UserService {
         
         User savedUser = userRepository.save(user);
         log.info("Successfully created user with ID: {}", savedUser.getId());
+        
+        // Publish user creation event to Kafka
+        kafkaProducerService.publishUserEvent("CREATED", savedUser);
         
         return savedUser;
     }
@@ -114,6 +118,9 @@ public class UserService {
         User updatedUser = userRepository.save(existingUser);
         log.info("Successfully updated user with ID: {}", updatedUser.getId());
         
+        // Publish user update event to Kafka
+        kafkaProducerService.publishUserEvent("UPDATED", updatedUser);
+        
         return updatedUser;
     }
     
@@ -136,6 +143,9 @@ public class UserService {
         
         userRepository.deleteById(id);
         log.info("Successfully deleted user with ID: {}", id);
+        
+        // Publish user deletion event to Kafka
+        kafkaProducerService.publishUserEvent("DELETED", user);
     }
     
     /**

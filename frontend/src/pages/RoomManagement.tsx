@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * Room Management Component
- * Provides comprehensive room management interface with CRUD operations
- * Displays rooms in a table with actions for add, edit, and delete
+ * Provides comprehensive room management interface with CRUD operations (excluding edit)
+ * Displays rooms in a table with actions for add and delete
  * 
  * @component
  * @returns {JSX.Element} Room management interface
@@ -192,7 +192,7 @@ export const RoomManagement: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Room Management</h1>
             <p className="mt-2 text-gray-600">
-              Manage rooms in the allocation system - Add, edit, and delete rooms
+              Manage rooms in the allocation system - Add and delete rooms
             </p>
           </div>
           
@@ -418,13 +418,6 @@ export const RoomManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
-                        {/* Edit Button */}
-                        <button
-                          className="btn-secondary text-xs py-1 px-2"
-                        >
-                          Edit
-                        </button>
-                        
                         {/* Delete Button */}
                         <button
                           onClick={() => handleDeleteRoom(room.id, room.roomNumber)}
